@@ -12,6 +12,7 @@ async function getItems(req, res) {
   try {
     const { page = 1, limit = 5 } = req.query;
     const skip = (page - 1) * limit;
+
     const items = await Item.find().skip(skip).limit(limit);
     const totalItems = await Item.countDocuments();
     res.status(200).json({ items, totalItems, page, limit });
@@ -106,7 +107,6 @@ async function updateItem(req, res) {
       isUpdate = true;
     }
     if (isUpdate) {
-      console.log(updateItem);
       res.status(201).json(updatedItem);
     } else {
       res.status(400).json({ error: "Nothing to update." });
