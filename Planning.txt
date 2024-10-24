@@ -1,0 +1,46 @@
+#Recipe App Api
+
+Problem: Create recipe app api using mongodb as database.
+
+Requirements: 
+    Inputs:
+    1. Name
+    2. Ingredients
+    3. Instructions
+    4. PrepTime
+    5. CookingTime
+    6. Servings
+
+    Features:
+    Must be able to:
+    1. Add new item.
+    2. View already added items.
+    3. Update details of added items.
+    4. Delete added item.
+  
+
+
+Solution: 
+    Create api to handle requests and return reponses at the following endpoints.
+    Endpoints:
+        1. GET /items.
+        2. GET /items/:itemId.
+        3. POST /items.
+        4. PUT /items/:itemId.
+        5. DELETE /items/:itemId.
+
+    Functions:
+        1. getItems.
+        2. getItemById.
+        3. updateItem.
+        4. deleteItem.
+
+    Folders:
+        1. Config.
+        2. Controllers.
+        3. Models.
+        4. Routes.
+
+
+
+   
