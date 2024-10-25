@@ -82,5 +82,56 @@ async function userLogin(req, res) {
     res.status(500).json({ error: "An error occured while logging in." });
   }
 }
+async function getUser(req, res) {
+  try {
+    const user = await User.findById(req.user._id);
+    res.status(200).json(user);
+  } catch (error) {
+    if (error.kind === "ObjectId") {
+      res.status(400).json({ error: "Invalid user id" });
+    } else {
+      res.status(500).json({ error: "An error occured while fetching user." });
+    }
+  }
+}
+async function updateUser(req, res) {
+  try {
+    const userId = req.user._id;
+    const { username, email, password } = req.body;
+    let isUpdate = false;
+    let updatedUser;
+    if (username !== "") {
+      updatedUser = await User.updateOne(
+        { _id: userId },
 
-export default { userRegister, userLogin };
+        { $set: { username: username } }
+      );
+      isUpdate = true;
+    }
+    if (email !== "") {
+      updatedUser = await User.updateOne(
+        { _id: userId },
+
+        { $set: { email: email } }
+      );
+      isUpdate = true;
+    }
+    if (password !== "") {
+      updatedUser = await User.updateOne(
+        { _id: userId },
+
+        { $set: { password: password } }
+      );
+      isUpdate = true;
+    }
+    if (isUpdate) {
+      res.status(201).json(updatedUser);
+    } else {
+      res.status(400).json({ error: "Nothing to update." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "An error occured while updating user." });
+  }
+}
+
+export default { userRegister, userLogin, getUser, updateUser };
