@@ -1,7 +1,36 @@
 import Recipe from "../models/recipe.js";
+import cloudinary from "../config/cloudinary.js";
 async function createRecipe(req, res) {
   try {
-    const recipeObj = { userId: req.user._id, ...req.body };
+    const { originalname, path, size } = req.file;
+
+    const options = {
+      resource_type: "image",
+      public_id: originalname,
+    };
+    //upload to cloudinary
+    const result = await cloudinary.uploader.upload(
+      req.file.path,
+      options,
+      async function (err, result) {
+        if (err) {
+          console.log(err);
+          return res.status(500).json({
+            success: false,
+            message: err.message,
+          });
+        }
+
+        return result;
+      }
+    );
+    const secure_url = result.secure_url;
+
+    const recipeObj = {
+      userId: req.user._id,
+      ...req.body,
+      imageUrl: secure_url,
+    };
     const recipe = await Recipe.create(recipeObj);
 
     res.status(201).json(recipe);
