@@ -8,7 +8,6 @@ const recipeSchema = new mongoose.Schema({
   prepTime: { type: Number },
   cookingTime: { type: Number },
   servings: { type: Number },
-  //picture: { type: String },
   createdAt: { type: Date, default: Date.now() },
 });
 const Recipe = mongoose.model("Recipe", recipeSchema);
