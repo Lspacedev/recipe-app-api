@@ -29,7 +29,6 @@ const userRegister = [
         errors: errors.array(),
       });
     }
-    console.log(req.body);
     try {
       const { username, email, password, role } = req.body;
       const hashedPassword = await bcrypt.hash(password, 10);
