@@ -11,7 +11,7 @@ async function createRecipe(req, res) {
 }
 async function getRecipes(req, res) {
   try {
-    const { page = 1, limit = 50 } = req.query;
+    const { page = 1, limit = 5 } = req.query;
     const skip = (page - 1) * limit;
 
     const recipes = await Recipe.find({ userId: req.user._id })
