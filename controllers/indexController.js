@@ -26,7 +26,9 @@ const userRegister = [
 
     if (!errors.isEmpty()) {
       return res.status(500).json({
-        errors: errors.array(),
+        errors: errors.array().map((obj) => {
+          return obj.msg;
+        }),
       });
     }
     try {
@@ -52,6 +54,7 @@ const userRegister = [
 
 async function userLogin(req, res) {
   try {
+    console.log(req.body);
     const { username, password } = req.body;
     const [user] = await User.find({ username });
     if (user.length === 0) {
