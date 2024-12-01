@@ -7,6 +7,7 @@ async function createRecipe(req, res) {
     const options = {
       resource_type: "image",
       public_id: originalname,
+      folder: "recipes",
     };
     //upload to cloudinary
     const result = await cloudinary.uploader.upload(
