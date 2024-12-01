@@ -41,6 +41,8 @@ async function getRecipeById(req, res) {
 }
 
 async function updateRecipe(req, res) {
+  console.log(req.body);
+
   try {
     const { recipeId } = req.params;
     const {
