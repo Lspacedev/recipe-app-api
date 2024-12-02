@@ -3,12 +3,12 @@ import cloudinary from "../config/cloudinary.js";
 async function createRecipe(req, res) {
   try {
     const { originalname, path, size } = req.file;
-
     const options = {
       resource_type: "image",
       public_id: originalname,
       folder: "recipes",
     };
+
     //upload to cloudinary
     const result = await cloudinary.uploader.upload(
       req.file.path,
@@ -25,8 +25,8 @@ async function createRecipe(req, res) {
         return result;
       }
     );
-    const secure_url = result.secure_url;
 
+    const secure_url = result.secure_url;
     const recipeObj = {
       userId: req.user._id,
       ...req.body,
@@ -36,6 +36,7 @@ async function createRecipe(req, res) {
 
     res.status(201).json(recipe);
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occured while creating Recipe." });
   }
 }

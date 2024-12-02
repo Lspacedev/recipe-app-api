@@ -4,13 +4,12 @@ import authenticate from "../middleware/authenticate.js";
 import authorize from "../middleware/authorize.js";
 import upload from "../config/multer.js";
 const recipesRouter = Router();
-
 recipesRouter.get("/", authenticate, recipesController.getRecipes);
 recipesRouter.post(
   "/",
   authenticate,
   authorize("ADMIN"),
-  upload.single("file"),
+  upload.single("image"),
   recipesController.createRecipe
 );
 recipesRouter.get("/:recipeId", authenticate, recipesController.getRecipeById);
