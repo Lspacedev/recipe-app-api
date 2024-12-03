@@ -1,5 +1,6 @@
 import Recipe from "../models/recipe.js";
 import cloudinary from "../config/cloudinary.js";
+import fs from "fs";
 async function createRecipe(req, res) {
   try {
     const { originalname, path, size } = req.file;
@@ -20,6 +21,12 @@ async function createRecipe(req, res) {
             message: err.message,
           });
         }
+        fs.unlink(`./tmp/${req.file.filename}`, (err) => {
+          if (err) {
+            console.error(err);
+            return;
+          }
+        });
         return result;
       }
     );
@@ -139,6 +146,12 @@ async function updateRecipe(req, res) {
 async function deleteRecipe(req, res) {
   try {
     const { recipeId } = req.params;
+    // cloudinary.v2.uploader.destroy(
+    //   'folder/sample',
+    //   function(error, result) {
+    //     console.log(result, error)
+    //   }
+    // );
     const deleteRecipe = await Recipe.deleteOne({ _id: recipeId });
     res.status(200).json(deleteRecipe);
   } catch (error) {

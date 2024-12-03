@@ -1,154 +1,135 @@
-import Recipe from "../models/recipe.js";
-import cloudinary from "../config/cloudinary.js";
-async function createRecipe(req, res) {
+import User from "../models/user.js";
+import { body, validationResult } from "express-validator";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
+const alphaErr = "must only contain letters.";
+const lengthErr = "must be between 1 and 25 characters.";
+const passLengthErr = "must be between 5 and 25 characters.";
+
+const validateRegister = [
+  body("username")
+    .trim()
+    .isAlpha()
+    .withMessage(`Username ${alphaErr}`)
+    .isLength({ min: 1, max: 25 })
+    .withMessage(`Username ${lengthErr}`),
+  body("email").isEmail().withMessage("Not a valid e-mail address"),
+  body("password")
+    .isLength({ min: 5, max: 25 })
+    .withMessage(`Password ${passLengthErr}`),
+];
+
+const userRegister = [
+  validateRegister,
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(500).json({
+        errors: errors.array(),
+      });
+    }
+    try {
+      const { username, email, password, role } = req.body;
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const user = await User.create({
+        username,
+        email,
+        role,
+        password: hashedPassword,
+      });
+      res.status(201).json({ message: "Registration successful" });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({ error: "An error occured during registration" });
+    }
+  },
+];
+
+async function userLogin(req, res) {
   try {
-    const { originalname, path, size } = req.file;
-    const options = {
-      resource_type: "image",
-      public_id: originalname,
-      folder: "recipes",
-    };
-    //upload to cloudinary
-    const result = await cloudinary.uploader.upload(
-      req.file.path,
-      options,
-      async function (err, result) {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({
-            success: false,
-            message: err.message,
-          });
-        }
-        return result;
-      }
+    const { username, password } = req.body;
+    const [user] = await User.find({ username });
+    if (user.length === 0) {
+      return res.status(404).json({ message: "User does not exist." });
+    }
+    const match = await bcrypt.compare(password, user.password);
+
+    if (!match) {
+      return res.status(401).json({ message: "Incorrect password" });
+    }
+
+    const token = jwt.sign(
+      {
+        userId: user._id,
+        username: user.username,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: "3h" }
     );
-    const secure_url = result.secure_url;
-    const recipeObj = {
-      userId: req.user._id,
-      ...req.body,
-      imageUrl: secure_url,
-    };
-    const recipe = await Recipe.create(recipeObj);
-    res.status(201).json(recipe);
+
+    return res.status(200).json({
+      message: "Auth Passed",
+      token,
+    });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "An error occured while creating Recipe." });
+    res.status(500).json({ error: "An error occured while logging in." });
   }
 }
-async function getRecipes(req, res) {
+async function getUser(req, res) {
   try {
-    const { page = 1, limit = 50 } = req.query;
-    const skip = (page - 1) * limit;
-    const recipes = await Recipe.find({ userId: req.user._id })
-      .skip(skip)
-      .limit(limit);
-    const totalRecipes = await Recipe.countDocuments();
-    res.status(200).json({ recipes, totalRecipes, page, limit });
-  } catch (error) {
-    res.status(500).json({ error: "An error occured while fetching recipes." });
-  }
-}
-async function getRecipeById(req, res) {
-  try {
-    const { recipeId } = req.params;
-    const recipe = await Recipe.findById(recipeId);
-    res.status(200).json(recipe);
+    const user = await User.findById(req.user._id);
+    res.status(200).json(user);
   } catch (error) {
     if (error.kind === "ObjectId") {
-      res.status(400).json({ error: "Invalid recipe id" });
+      res.status(400).json({ error: "Invalid user id" });
     } else {
-      res
-        .status(500)
-        .json({ error: "An error occured while fetching recipe." });
+      res.status(500).json({ error: "An error occured while fetching user." });
     }
   }
 }
-async function updateRecipe(req, res) {
+async function updateUser(req, res) {
   try {
-    const { recipeId } = req.params;
-    const {
-      name,
-      ingredients,
-      instructions,
-      category,
-      prepTime,
-      cookingTime,
-      servings,
-    } = req.body;
+    const userId = req.user._id;
+    const { username, email, password } = req.body;
     let isUpdate = false;
-    let updatedRecipe;
-    if (name !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { name: name } }
+    let updatedUser;
+    if (username !== "") {
+      updatedUser = await User.updateOne(
+        { _id: userId },
+
+        { $set: { username: username } }
       );
       isUpdate = true;
     }
-    if (ingredients !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { ingredients: ingredients } }
+    if (email !== "") {
+      updatedUser = await User.updateOne(
+        { _id: userId },
+
+        { $set: { email: email } }
       );
       isUpdate = true;
     }
-    if (instructions !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { instructions: instructions } }
-      );
-      isUpdate = true;
-    }
-    if (category !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { category: category } }
-      );
-      isUpdate = true;
-    }
-    if (prepTime !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { prepTime: Number(prepTime) } }
-      );
-      isUpdate = true;
-    }
-    if (cookingTime !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { cookingTime: Number(cookingTime) } }
-      );
-      isUpdate = true;
-    }
-    if (servings !== "") {
-      updatedRecipe = await Recipe.updateOne(
-        { _id: recipeId },
-        { $set: { servings: Number(servings) } }
+    if (password !== "") {
+      updatedUser = await User.updateOne(
+        { _id: userId },
+
+        { $set: { password: password } }
       );
       isUpdate = true;
     }
     if (isUpdate) {
-      res.status(201).json(updatedRecipe);
+      res.status(201).json(updatedUser);
     } else {
       res.status(400).json({ error: "Nothing to update." });
     }
   } catch (error) {
-    res.status(500).json({ error: "An error occured while updating Recipe." });
+    res.status(500).json({ error: "An error occured while updating user." });
   }
 }
-async function deleteRecipe(req, res) {
-  try {
-    const { recipeId } = req.params;
-    const deleteRecipe = await Recipe.deleteOne({ _id: recipeId });
-    res.status(200).json(deleteRecipe);
-  } catch (error) {
-    res.status(500).json({ error: "An error occured while deleting Recipe." });
-  }
-}
-export default {
-  createRecipe,
-  getRecipes,
-  getRecipeById,
-  updateRecipe,
-  deleteRecipe,
-};
+
+export default { userRegister, userLogin, getUser, updateUser };
