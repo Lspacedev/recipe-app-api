@@ -3,6 +3,10 @@ import indexController from "../controllers/indexController.js";
 import authenticate from "../middleware/authenticate.js";
 
 const indexRouter = Router();
+indexRouter.get("/test", (req, res) => {
+  res.json({ message: "alive" });
+});
+
 indexRouter.post("/register", indexController.userRegister);
 indexRouter.post("/login", indexController.userLogin);
 indexRouter.get("/profile", authenticate, indexController.getUser);
