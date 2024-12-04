@@ -146,12 +146,17 @@ async function updateRecipe(req, res) {
 async function deleteRecipe(req, res) {
   try {
     const { recipeId } = req.params;
-    // cloudinary.v2.uploader.destroy(
-    //   'folder/sample',
-    //   function(error, result) {
-    //     console.log(result, error)
-    //   }
-    // );
+
+    const recipe = await Recipe.findById(recipeId);
+    const filename = recipe.imageUrl.substring(
+      recipe.imageUrl.lastIndexOf("/") + 1
+    );
+    const id = filename.slice(0, filename.lastIndexOf("."));
+
+    cloudinary.uploader.destroy(`recipes/${id}`, function (error, result) {
+      console.log(result, error);
+    });
+
     const deleteRecipe = await Recipe.deleteOne({ _id: recipeId });
     res.status(200).json(deleteRecipe);
   } catch (error) {
