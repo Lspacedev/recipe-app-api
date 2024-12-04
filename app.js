@@ -18,4 +18,4 @@ mongooseConnection();
 app.use("/", indexRouter);
 app.use("/api/recipes", recipesRouter);
 const PORT = process.env.PORT || 8000;
-app.listen(PORT, () => console.log(`Express app listening on port ${PORT}!`));
+app.listen(PORT, () => console.log(`App listening on port ${PORT}!`));
