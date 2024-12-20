@@ -40,7 +40,9 @@ async function createRecipe(req, res) {
     res.status(201).json(recipe);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "An error occured while creating Recipe." });
+    res
+      .status(500)
+      .json({ error: "An error occured while creating Recipe.", error });
   }
 }
 async function getRecipes(req, res) {
