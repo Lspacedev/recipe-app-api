@@ -3,6 +3,10 @@ import cloudinary from "../config/cloudinary.js";
 import fs from "fs";
 async function createRecipe(req, res) {
   try {
+    if (!req.file) {
+      return res.status(400).json("No file uploaded.");
+    }
+
     const { originalname, path, size } = req.file;
     const options = {
       resource_type: "image",
@@ -10,26 +14,22 @@ async function createRecipe(req, res) {
       folder: "recipes",
     };
     //upload to cloudinary
-    const result = await cloudinary.uploader.upload(
-      req.file.path,
-      options,
-      async function (err, result) {
-        if (err) {
-          console.log(err);
-          return res.status(500).json({
-            success: false,
-            message: err.message,
-          });
-        }
-        fs.unlink(`./tmp/${req.file.filename}`, (err) => {
-          if (err) {
-            console.error(err);
-            return;
+    const result = await new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        options,
+        (error, result) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(result);
           }
-        });
-        return result;
-      }
-    );
+        }
+      );
+
+      // Write the buffer to the stream
+      uploadStream.end(req.file.buffer);
+    });
+
     const secure_url = result.secure_url;
     const recipeObj = {
       userId: req.user._id,
