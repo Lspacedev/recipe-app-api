@@ -56,7 +56,10 @@ const userRegister = [
 
 async function userLogin(req, res) {
   try {
+    console.log("ff");
+
     const { username, password } = req.body;
+    console.log("ff", username);
     const [user] = await User.find({ username });
     if (user.length === 0) {
       return res.status(404).json({ error: "User does not exist." });
