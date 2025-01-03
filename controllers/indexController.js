@@ -31,6 +31,11 @@ const userRegister = [
     }
     try {
       const { username, email, password, role } = req.body;
+
+      const [userExists] = await User.find({ email });
+      if (userExists.length !== 0) {
+        return res.status(404).json({ message: "User with email exists." });
+      }
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const user = await User.create({
