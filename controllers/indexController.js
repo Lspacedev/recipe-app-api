@@ -59,12 +59,12 @@ async function userLogin(req, res) {
     const { username, password } = req.body;
     const [user] = await User.find({ username });
     if (user.length === 0) {
-      return res.status(404).json({ message: "User does not exist." });
+      return res.status(404).json({ error: "User does not exist." });
     }
     const match = await bcrypt.compare(password, user.password);
 
     if (!match) {
-      return res.status(401).json({ message: "Incorrect password" });
+      return res.status(401).json({ error: "Incorrect password" });
     }
 
     const token = jwt.sign(
@@ -82,6 +82,7 @@ async function userLogin(req, res) {
       token,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "An error occured while logging in." });
   }
 }
