@@ -26,7 +26,6 @@ async function createRecipe(req, res) {
         }
       );
 
-      // Write the buffer to the stream
       uploadStream.end(req.file.buffer);
     });
 
