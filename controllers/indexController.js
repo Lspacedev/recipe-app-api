@@ -31,8 +31,8 @@ const userRegister = [
     }
     try {
       const { username, email, password, role } = req.body;
+      const userExists = await User.find({ email });
 
-      const [userExists] = await User.find({ email });
       if (userExists.length !== 0) {
         return res.status(404).json({ message: "User with email exists." });
       }
@@ -44,6 +44,7 @@ const userRegister = [
         role,
         password: hashedPassword,
       });
+
       res.status(201).json({ message: "Registration successful" });
     } catch (error) {
       console.error(error);
@@ -57,12 +58,13 @@ const userRegister = [
 async function userLogin(req, res) {
   try {
     const { username, password } = req.body;
+
     const [user] = await User.find({ username });
-    if (user.length === 0) {
+
+    if (!user) {
       return res.status(404).json({ error: "User does not exist." });
     }
     const match = await bcrypt.compare(password, user.password);
-
     if (!match) {
       return res.status(401).json({ error: "Incorrect password" });
     }
@@ -121,10 +123,12 @@ async function updateUser(req, res) {
       isUpdate = true;
     }
     if (password !== "") {
+      const hashedPassword = await bcrypt.hash(password, 10);
+
       updatedUser = await User.updateOne(
         { _id: userId },
 
-        { $set: { password: password } }
+        { $set: { password: hashedPassword } }
       );
       isUpdate = true;
     }
