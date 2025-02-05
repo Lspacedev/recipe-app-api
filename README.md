@@ -41,10 +41,7 @@ npm install
 ```bash
 PORT="Specify your port here"
 MONGO_URI="MongoDb database uri"
-JWT_SECRET="Jwt secret"
-CLOUDINARY_CLOUD_NAME="Cloudinary cloud name"
-CLOUDINARY_API_KEY="Cloudinary api key"
-CLOUDINARY_SECRET_KEY="Cloudinary secret key"
+
 ```
 
 6. Run the project
@@ -95,7 +92,7 @@ Endpoints
 
 ```python
     1. POST /api/recipes
-        Inputs: name, ingredients, instructions, category, prepTime, cookingTime, servings, image
+        Inputs: name, ingredients, instructions, category, prepTime, cookingTime, servings
 
     2. PUT /api/recipes/:recipeId
             Params: recipeId
